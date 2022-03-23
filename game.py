@@ -48,28 +48,84 @@ def check_columns(board):
         matches[col_idx] = col_matches
     return matches
 
+def above(idx):
+    return idx - 6
+
+def below(idx):
+    return idx + 6
+
+def left(idx):
+    return idx - 1
+
+def right(idx):
+    return idx + 1
 
 def check_combos(board):
     # scan for 3+ more in each direction of each orb
 
-    h_matches = check_rows(board)
-    v_matches = check_columns(board)
+    r_group = []
+    g_group = []
+    b_group = []
+    l_group = []
+    d_group = []
+    h_group = []
+    h_dont_check = [4, 5, 10, 11, 16, 17, 22, 23, 28, 29]
+    v_dont_check = [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
 
-    groups_to_remove = [] # groups of combos that need to be broken 
-
-    # for hkey in h_matches:
-    #     # hkey is the nth row of the board (ex: the '3' in 3:[4, 5, 6])
-    #     if h_matches[hkey] != 0: # if any matches exist in that row
-    #         for x in h_matches[hkey]: # for each x value in that row
-    #             for vkey in v_matches:
-    #                 if vkey == x:
-    #                     for y in v_matches[vkey]:
-    #                         if y == hkey:
-    #                             group = [h_matches[hkey], v_matches[vkey]]
-
+    for square_idx in range(len(board)):
+        matches = []
+        if square_idx not in h_dont_check and board[square_idx] == board[right(square_idx)] and board[square_idx] == board[right(right(square_idx))]:
+            matches.append(square_idx)
+            matches.append(right(square_idx))
+            matches.append(right(right(square_idx)))
+            if board[square_idx] == 'r':
+                r_group.extend(matches)
+            elif board[square_idx] == 'g':
+                g_group.extend(matches)
+            elif board[square_idx] == 'b':
+                b_group.extend(matches)
+            elif board[square_idx] == 'd':
+                d_group.extend(matches)
+            elif board[square_idx] == 'l':
+                l_group.extend(matches)
+            elif board[square_idx] == 'h':
+                h_group.extend(matches)
+        if square_idx not in v_dont_check and board[square_idx] == board[below(square_idx)] and board[square_idx] == board[below(below(square_idx))]:
+            matches.append(square_idx)
+            matches.append(below(square_idx))
+            matches.append(below(below(square_idx)))
+            if board[square_idx] == 'r':
+                r_group.extend(matches)
+            elif board[square_idx] == 'g':
+                g_group.extend(matches)
+            elif board[square_idx] == 'b':
+                b_group.extend(matches)
+            elif board[square_idx] == 'd':
+                d_group.extend(matches)
+            elif board[square_idx] == 'l':
+                l_group.extend(matches)
+            elif board[square_idx] == 'h':
+                h_group.extend(matches)
     
+    r_group = list(dict.fromkeys(r_group))
+    g_group = list(dict.fromkeys(g_group))
+    b_group = list(dict.fromkeys(b_group))
+    l_group = list(dict.fromkeys(l_group))
+    d_group = list(dict.fromkeys(d_group))
+    h_group = list(dict.fromkeys(h_group))
 
+    print('r:', r_group)
+    print('g:', g_group)
+    print('b:', b_group)
+    print('l:', l_group)
+    print('d:', d_group)
+    print('h:', h_group)
 
+def group_combos(match_array):
+    color_arr = []
+    for i in range(len(match_array) - 1):
+        if match_array[i + 1] - match_array[i] == 1:
+            pass
 
 def start_board():
     colors = ['r', 'g', 'b', 'l', 'd', 'h']
@@ -90,9 +146,14 @@ def pick_up_orb(board):
     chosen = input('Select the orb to move: ')
 
 def main():
-    new_board = start_board() #new_board = string of 30 characters
+    decision = input('Type in board or type r for a random board: ')
+    if decision == 'r':
+        new_board = start_board() #new_board = string of 30 characters
+    else:
+        new_board = decision.lower()
     print(GUI_board(new_board))
     print(check_rows(new_board))
     print(check_columns(new_board))
+    check_combos(new_board)
 
 main()
