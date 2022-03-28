@@ -7,6 +7,9 @@
 
 import math
 import random
+from itertools import tee
+import numpy
+from numpy import ndarray
 
 
 def check_rows(board):
@@ -114,18 +117,48 @@ def check_combos(board):
     d_group = list(dict.fromkeys(d_group))
     h_group = list(dict.fromkeys(h_group))
 
-    print('r:', r_group)
-    print('g:', g_group)
-    print('b:', b_group)
-    print('l:', l_group)
-    print('d:', d_group)
-    print('h:', h_group)
+    # print('r:', r_group)
+    # print('g:', g_group)
+    # print('b:', b_group)
+    # print('l:', l_group)
+    # print('d:', d_group)
+    # print('h:', h_group)
+
+    return [r_group, g_group, b_group, l_group, d_group, h_group]
 
 def group_combos(match_array):
-    color_arr = []
-    for i in range(len(match_array) - 1):
-        if match_array[i + 1] - match_array[i] == 1:
-            pass
+    
+    color_arr = [] # array of arrays, each inner array represents a group of orbs
+    for i in range(len(match_array)): # for each orb
+        for j in range(i + 1, len(match_array)): # compare with all other orbs after it
+            if match_array[j] - match_array[i] == 1 or match_array[j] - match_array[i] == 6: # if the difference is 1 or 6 then orbs need to be grouped
+                if not any(match_array[i] in sublist for sublist in color_arr): # if first compared orb does not exist in any group
+                    color_arr.append([match_array[i]]) # initialize new group
+                for arr in color_arr:
+                    if match_array[i] in arr:
+                        arr.append(match_array[j])
+    for arr_idx in range(len(color_arr)):
+        color_arr[arr_idx] = list(dict.fromkeys(color_arr[arr_idx]))
+
+    return color_arr
+
+# def pairwise(iterable):
+#     # pairwise('ABCDEFG') --> AB BC CD DE EF FG
+#     a, b = tee(iterable)
+#     next(b, None)
+#     return zip(a, b)
+
+# def check_attach(arr_of_arr):
+
+#     for arr_idx in range(len(arr_of_arr)):
+#         if len(arr_of_arr[arr_idx]) == 6:
+#             if [y-x for (x, y) in pairwise(arr_of_arr[arr_idx])] == [1, 1, 1, 1, 1]:
+#                 new_arr = numpy.array(numpy.array_split(numpy.array(arr_of_arr[arr_idx]), 2))
+#                 print(type(new_arr))
+#                 arr_of_arr[arr_idx] = new_arr
+    
+#     return arr_of_arr
+                
 
 def start_board():
     colors = ['r', 'g', 'b', 'l', 'd', 'h']
@@ -148,12 +181,27 @@ def pick_up_orb(board):
 def main():
     decision = input('Type in board or type r for a random board: ')
     if decision == 'r':
-        new_board = start_board() #new_board = string of 30 characters
+        new_board = start_board() #new_board = array of 30 orbs
     else:
         new_board = decision.lower()
     print(GUI_board(new_board))
     print(check_rows(new_board))
     print(check_columns(new_board))
-    check_combos(new_board)
+    raw_combo_arr = check_combos(new_board)
+    for i in range(len(raw_combo_arr)):
+        grouped = group_combos(raw_combo_arr[i])
+        if i == 0:
+            print('r:', raw_combo_arr[i], grouped)
+        elif i == 1:
+            print('g:', raw_combo_arr[i], grouped)
+        elif i == 2:
+            print('b:', raw_combo_arr[i], grouped)
+        elif i == 3:
+            print('l:', raw_combo_arr[i], grouped)
+        elif i == 4:
+            print('d:', raw_combo_arr[i], grouped)
+        elif i == 5:
+            print('h:', raw_combo_arr[i], grouped)
+    
 
 main()
