@@ -75,8 +75,15 @@ def check_h_colors(matches):
                 h_match.append(matches[row_idx][col_idx])
     # write a doc about timeline
 
+    print(r_match)
+    print(g_match)
+    print(b_match)
+    print(l_match)
+    print(d_match)
+    print(h_match)
 
 def check_attach(col_matches):
+    pass
 
 def check_vertical(board):
     pass
@@ -123,5 +130,6 @@ def main():
     h_matches = check_horizontal(new_board)
     print(h_matches)
     analyze(h_matches)
+    check_h_colors(h_matches)
 
 main()
