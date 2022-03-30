@@ -1,92 +1,20 @@
 import random
 
+
 def start_board():
     colors = ['r', 'g', 'b', 'l', 'd', 'h']
-    board = [[], [], [], [], []]
-    for row in board:
-        for i in range(6):
-            row.append(random.choice(colors))
+    board = []
+    for i in range(30):
+        board.append(random.choice(colors))
     return board
 
 def gui_board(board):
-    for row in board:
-        print(row)
-
-def two_dimension(orb_string):
-    
-    board = [[], [], [], [], []]
-    for orb_idx in range(len(orb_string)):
-        if orb_idx <= 5:
-            board[0].append(orb_string[orb_idx])
-        elif orb_idx > 5 and orb_idx <= 11:
-            board[1].append(orb_string[orb_idx])
-        elif orb_idx > 11 and orb_idx <= 17:
-            board[2].append(orb_string[orb_idx])
-        elif orb_idx > 17 and orb_idx <= 23:
-            board[3].append(orb_string[orb_idx])
-        elif orb_idx > 23 and orb_idx <= 29:
-            board[4].append(orb_string[orb_idx])
-    return board
-
-def check_horizontal(board):
-    total = []
-    for row in board:
-        color_matches = [[], [], [], [], [], []]
-        for orb_idx in range(len(row) - 2):
-            if row[orb_idx] == row[orb_idx + 1] and row[orb_idx] == row[orb_idx + 2]:
-                if row[orb_idx] == 'r':
-                    color_matches[0].extend([orb_idx, orb_idx + 1, orb_idx + 2])
-                elif row[orb_idx] == 'g':
-                    color_matches[1].extend([orb_idx, orb_idx + 1, orb_idx + 2])
-                elif row[orb_idx] == 'b':
-                    color_matches[2].extend([orb_idx, orb_idx + 1, orb_idx + 2])
-                elif row[orb_idx] == 'l':
-                    color_matches[3].extend([orb_idx, orb_idx + 1, orb_idx + 2])
-                elif row[orb_idx] == 'd':
-                    color_matches[4].extend([orb_idx, orb_idx + 1, orb_idx + 2])
-                elif row[orb_idx] == 'h':
-                    color_matches[5].extend([orb_idx, orb_idx + 1, orb_idx + 2])
-        for color_match_idx in range(len(color_matches)):
-            color_matches[color_match_idx] = list(dict.fromkeys(color_matches[color_match_idx]))
-        total.append(color_matches)
-    return total
-
-def check_h_colors(matches):
-    r_match= []
-    g_match = []
-    b_match = []
-    l_match = []
-    d_match = []
-    h_match = []
-
-    for row_idx in range(len(matches)):
-        for col_idx in range(len(matches[row_idx])):
-            if col_idx == 0:
-                r_match.append(matches[row_idx][col_idx])
-            elif col_idx == 1:
-                g_match.append(matches[row_idx][col_idx])
-            elif col_idx == 2:
-                b_match.append(matches[row_idx][col_idx])
-            elif col_idx == 3:
-                l_match.append(matches[row_idx][col_idx])
-            elif col_idx == 4:
-                d_match.append(matches[row_idx][col_idx])
-            elif col_idx == 5:
-                h_match.append(matches[row_idx][col_idx])
-    # write a doc about timeline
-
-    print(r_match)
-    print(g_match)
-    print(b_match)
-    print(l_match)
-    print(d_match)
-    print(h_match)
-
-def check_attach(col_matches):
-    pass
-
-def check_vertical(board):
-    pass
+    toSend = ''
+    for i in range(len(board)):
+        toSend += board[i] + ' '
+        if (i + 1) % 6 == 0:
+            toSend += '\n'
+    return toSend
 
 def analyze(matches):
     print('Analysis:')
@@ -117,19 +45,72 @@ def analyze(matches):
                 data += f'{key}:  {match_dic[key]} '
             print(f'Row {row_idx + 1}: ' + data)
 
+def horizontal_matches(board):
+    matches = {'r': [], 'g': [], 'b': [], 'l': [], 'd': [], 'h': []}
+    
+    # check horizontal matches first
+    dont_check = [4, 5, 10, 11, 16, 17, 22, 23, 28, 29]
+    for i in range(len(board)): 
+        if i not in dont_check:
+            if board[i] == board[i + 1] and board[i] == board[i + 2]:
+                matches[board[i]].extend([i, i + 1, i + 2])
 
+    # remove duplicate entries from each color
+    for key in matches:
+        uniq = list(dict.fromkeys(matches[key]))
+        matches[key] = uniq
+
+    for key in matches: #  matches[key] = [9, 10, 11, 12, 13, 14, 18, 19, 20]
+        groups = [] # will replace original value in key
+        # check each orb with every orb on the right of it
+        if len(matches[key]) != 0:
+            for i in range(len(matches[key]) - 1):
+                for j in range(i + 1, len(matches[key])):
+                    o1 = matches[key][i]
+                    o2 = matches[key][j]
+                    if touching(o1, o2): #if they are next to each other vertically or horizontally
+                        if len(groups) == 0:
+                            groups.append([o1, o2])
+                        else:
+                            grplen = len(groups)
+                            if not any(o1 in sublist for sublist in groups):
+                                groups.append([o1, o2])
+                            else:
+                                for grpi in range(grplen):
+                                    if o1 in groups[grpi]:
+                                        groups[grpi].append(o2)
+
+        for grpidx in range(len(groups)):
+            groups[grpidx] = list(dict.fromkeys(groups[grpidx]))
+        
+        matches[key] = groups
+    return matches
+
+def touching(orb1, orb2):
+    row_end = [5, 11, 17, 23, 29]
+    if (orb1 % 6 == orb2 % 6 and abs(orb1 - orb2) == 6) or (abs(orb1 - orb2) == 1 and orb1 not in row_end):
+        return True
+    else:
+        return False
 
 def main():
-    my = ''
+    my = 'DBBBBHRHLDDDDDDRRHDDDLHBRHLGHD'
+    new_board = []
     if my == '':
         new_board = start_board()
     else:
-        new_board = two_dimension(my.lower())
-    gui_board(new_board)
+        for letter in my:
+            new_board.append(letter.lower())
+    
+    print(gui_board(new_board))
 
-    h_matches = check_horizontal(new_board)
-    print(h_matches)
-    analyze(h_matches)
-    check_h_colors(h_matches)
+    print(horizontal_matches(new_board))
+
+    # check for matches of each color in each ROW (HORIZONTAL FIRST)
+        # return a list of dictionaries, each dic being color
+    # check each row and the row under it for any touching orbs
+
+    # return groups of matches
+
 
 main()
